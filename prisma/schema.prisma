@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model hastalar {
+  id         String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  fullname   String
+  email      String
+  telefon    String       @unique
+  password   String
+  randevular randevular[]
+}
+
+model klinikler {
+  id         String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  klinik     String
+  klinikYeri String
+  doktorlar  doktorlar[]
+  randevular randevular[]
+}
+
+model doktorlar {
+  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  doktorAdiSoyadi String
+  klinikId        String            @db.Uuid
+  klinik          klinikler         @relation(fields: [klinikId], references: [id])
+  randevuSaatleri randevuSaatleri[]
+  randevular      randevular[]
+}
+
+model randevuSaatleri {
+  id         String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  doktorId   String       @db.Uuid
+  tarih      DateTime     @db.Date
+  saat       String
+  doluMu     Boolean      @default(false)
+  doktor     doktorlar    @relation(fields: [doktorId], references: [id])
+  randevular randevular[]
+}
+
+model randevular {
+  id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  hastaId       String          @db.Uuid
+  doktorId      String          @db.Uuid
+  klinikId      String          @db.Uuid
+  randevuSaatId String          @db.Uuid
+  durum         String
+  doktor        doktorlar       @relation(fields: [doktorId], references: [id])
+  hasta         hastalar        @relation(fields: [hastaId], references: [id])
+  klinik        klinikler       @relation(fields: [klinikId], references: [id])
+  randevu       randevuSaatleri @relation(fields: [randevuSaatId], references: [id])
+}
+
+model kullanicilar {
+  kullaniciId        String @id
+  kullaniciAdiSoyadi String
+  email              String
+  password           String
+}
